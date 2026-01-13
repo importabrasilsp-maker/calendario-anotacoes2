@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Calendário com Anotações</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:Arial;background:#f2f2f2;margin:15px}
+h1{text-align:center}
+.controls{text-align:center;margin-bottom:20px}
+input,button{
+ padding:8px 12px;font-size:14px;border-radius:6px;border:1px solid #ccc
+}
+button{background:#007bff;color:#fff;border:none;cursor:pointer}
+.clear{background:#d9534f;margin-left:10px}
+.month{
+ background:#fff;margin-bottom:25px;border-radius:10px;
+ box-shadow:0 2px 6px rgba(0,0,0,.15);overflow:hidden
+}
+.month h2{
+ margin:0;padding:10px;color:#fff;text-align:center
+}
+table{width:100%;border-collapse:collapse}
+th{background:#eee;padding:6px}
+td{border:1px solid #ccc;height:110px;vertical-align:top;padding:4px}
+.weekend{background:#fff5f5}
+.day{font-weight:bold}
+textarea{
+ width:100%;height:70px;border:none;resize:none;background:transparent
+}
+textarea:focus{outline:none;background:#ffffe0}
+</style>
+</head>
+<body>
+
+<h1>Calendário com Anotações</h1>
+
+<div class="controls">
+ Ano:
+ <input type="number" id="ano" value="2026" style="width:90px">
+ <button onclick="gerar()">Gerar calendário</button>
+ <button class="clear" onclick="limparTudo()">🗑️ Limpar anotações</button>
+</div>
+
+<div id="calendario"></div>
+
+<script>
+const meses=["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+"Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
+const cores=["#1abc9c","#3498db","#9b59b6","#e67e22","#e74c3c","#16a085",
+"#2980b9","#8e44ad","#f39c12","#d35400","#c0392b","#2c3e50"];
+
+function gerar(){
+ const ano=document.getElementById("ano").value;
+ const cal=document.getElementById("calendario");
+ cal.innerHTML="";
+
+ for(let m=0;m<12;m++){
+  let html=`<div class="month">
+  <h2 style="background:${cores[m]}">${meses[m]} / ${ano}</h2>
+  <table><tr>
+  <th>Dom</th><th>Seg</th><th>Ter</th><th>Qua</th>
+  <th>Qui</th><th>Sex</th><th>Sáb</th></tr><tr>`;
+
+  let d=new Date(ano,m,1);
+  for(let i=0;i<d.getDay();i++) html+="<td></td>";
+
+  while(d.getMonth()==m){
+   let wk=d.getDay();
+   let key=`${ano}-${m+1}-${d.getDate()}`;
+   html+=`<td class="${wk==0||wk==6?"weekend":""}">
+   <div class="day">${d.getDate()}</div>
+   <textarea data-key="${key}"></textarea></td>`;
+   if(wk==6) html+="</tr><tr>";
+   d.setDate(d.getDate()+1);
+  }
+
+  html+="</tr></table></div>";
+  cal.innerHTML+=html;
+ }
+
+ document.querySelectorAll("textarea").forEach(t=>{
+  t.value=localStorage.getItem(t.dataset.key)||"";
+  t.oninput=()=>localStorage.setItem(t.dataset.key,t.value);
+ });
+}
+
+function limparTudo(){
+ if(confirm("Deseja apagar TODAS as anotações?")){
+  localStorage.clear();
+  document.querySelectorAll("textarea").forEach(t=>t.value="");
+ }
+}
+
+gerar();
+</script>
+
+</body>
+</html>
